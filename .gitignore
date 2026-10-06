@@ -1,0 +1,9 @@
+# 本次故障诊断产生的数据（体积大，不入库）
+etw-owner-diagnostics/
+*.etl
+*.etl.bak
+target-events.json
+self-test-events.json
+# 常见临时文件
+Thumbs.db
+desktop.ini
