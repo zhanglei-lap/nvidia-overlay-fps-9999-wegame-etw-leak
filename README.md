@@ -192,6 +192,18 @@ WeGame → 设置 → 查找 **帧数显示 / FPS 显示 / 性能监控 / 游戏
 （对应 `wegame_environment\wegame_env.exe` 的 FPS 监控与 `PerfOverlay.exe`。
 WeGame 自身的日志与 `data\json\platform_monitor_control.js` 为加密/混淆内容，无法离线确认确切开关名。）
 
+`二编：该方法存疑，我没在wengame的设置上找到相关开关，wengame的全局设置上也没有FPS显示的功能，至于为什么会有帧计数器相关的组件，可能是wegame预发布的功能随版本更新前置端上的一坨大粪。
+实测 WeGame（客户端 `6.6.1.9201`，2026-10）**设置界面与全局设置中都没有 FPS / 帧率 / 性能监控开关**；
+`Assistant.ini`、`switch_wegame.ini`、`cfg_data.ini`、`WGLoginConfig.ini` 等配置文件里也没有对应启用项。
+该 FPS 监控属于 WeGame「环境检测中心」的**内部组件**（`wegame_env.exe` 内含 `fps_monitor.cpp` /
+`CFPSMonitor`，配套 `PerfOverlay.exe`），随版本更新被前置到客户端，由 WeGame 自身流程触发，未向用户暴露开关。
+
+> **一个能说明 bug 本质的细节**：`E:\wegame\Assistant.ini` 的 `[KillExePath1]` 列表共 24 项，
+> 第 24 项正是 `wegame_environment\wegame_env.exe` —— 也就是说 **WeGame 退出时只会 `kill` 这个进程**。
+> 但 **ETW 跟踪会话是内核对象，进程被杀掉后会话依然存活**（必须调用
+> `ControlTrace(..., EVENT_TRACE_CONTROL_STOP)` 或 `logman stop` 才会释放），
+> 于是会话永久残留、缓冲区写满、把同一条事件通路拖垮。
+> **根源是"用错了清理机制"，因此不存在能靠设置解决的开关。**`
 ### 6.2 兜底 A：清理泄漏的会话（手动或定时）
 
 管理员执行：
